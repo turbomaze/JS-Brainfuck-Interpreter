@@ -4,8 +4,33 @@
 		<meta charset="UTF-8">
 		<title>Brainf**k Interpreter</title>
 		<script src="js/brainfuck.js"></script>
+		<style>
+		#program {
+			width: 356px;
+		}
+		.byte {
+			width: 30px;
+		}
+		#output {
+			color: red;
+		}
+		</style>
 	</head>
 	<body>
-		
+		Program: <input type="text" id="program">
+		<br>
+		Inputs, by the byte: 
+		<input type="text" class="byte" id="byte1" placeholder="Inp1">
+		<input type="text" class="byte" id="byte2" placeholder="Inp2">
+		<input type="text" class="byte" id="byte3" placeholder="Inp3">
+		<input type="text" class="byte" id="byte4" placeholder="Inp4">
+		<input type="text" class="byte" id="byte5" placeholder="Inp5">
+		<input type="text" class="byte" id="byte6" placeholder="Inp6">
+		<input type="text" class="byte" id="byte7" placeholder="Inp7">
+		<input type="text" class="byte" id="byte8" placeholder="Inp8">
+		<br>
+		<input type="button" id="run-btn" value="Run program">
+		<br>
+		Output: <span id="output">N/A</span>
 	</body>
 </html>

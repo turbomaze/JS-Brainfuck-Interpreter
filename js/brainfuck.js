@@ -10,17 +10,45 @@
 /**********
  * config */
 
-
 /*************
  * constants */
+var PRG_SEL = '#program';
+var INP_SEL_PREFIX = '#byte';
+var RUN_BTN_SEL = '#run-btn';
+var OUTPUT_SEL = '#output';
 
 /*********************
  * working variables */
+var numInputs;
 
 /******************
  * work functions */
 function initBFInterpreter() {
+	numInputs = document.getElementsByClassName('byte').length;
 	
+	$s(RUN_BTN_SEL).addEventListener('click', function() {
+		function inputIsValid(a) {
+			var intA = parseInt(a);
+			return parseFloat(a) === intA && intA >= 0 && intA < 256;
+		}
+		
+		var program = $s(PRG_SEL).value;
+		var inputs = [];
+		for (var ai = 1; ai <= numInputs; ai++) {
+			var val = $s(INP_SEL_PREFIX+ai).value;
+			if (inputIsValid(val)) {
+				inputs.push(parseInt(val));
+			} else {
+				break; //only consecutive bytes are included
+			}
+		}
+		var output = runProgram(program, inputs);
+		$s(OUTPUT_SEL).innerHTML = output;
+	});
+}
+
+function runProgram(program, inputs) {
+	return 7;
 }
 
 /********************
