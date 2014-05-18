@@ -4,7 +4,7 @@
 | @author Anthony  |
 | @version 0.1     |
 | @date 2014/03/20 |
-| @edit 2014/03/20 |
+| @edit 2014/05/17 |
 \******************/
 
 /**********
@@ -32,7 +32,7 @@ function initBFInterpreter() {
 			return parseFloat(a) === intA && intA >= 0 && intA < 256;
 		}
 		
-		var program = $s(PRG_SEL).value;
+		var program = $s(PRG_SEL).value.replace(/\u2212/g, '-'); //weird M-dash?
 		var inputs = [];
 		for (var ai = 1; ai <= numInputs; ai++) {
 			var val = $s(INP_SEL_PREFIX+ai).value;
@@ -49,8 +49,9 @@ function initBFInterpreter() {
 
 //program is a String, inputs is an array of integers in [0, 256)
 function runProgram(program, inputs) {
-	var tapeLen = 128; //128 cells on the tape
-	var checkEvery = 2*1000; //checks the time every this many iterations to ensure it isn't taking too long
+    var maxRunTime = 1000; //in ms
+	var tapeLen = 64; //# cells on the tape
+	var checkEvery = 200; //checks the time every this many iterations to ensure it isn't taking too long
 	var instructions = program.replace(/ /g, '').split(''); //essentially String.toCharArray()
 	var ret = 0;
 
@@ -64,42 +65,42 @@ function runProgram(program, inputs) {
 
 	///////////////
 	//interpreter//
-	var s = currentTimeMillis();
-	while (currentTimeMillis() - s < tapeLen/2) { //timeout
+	var s = +new Date();
+    var prgmHistory = {}; //all the states that have been reached
+	while (+new Date() - s < maxRunTime) { //timeout
 		for (var ai = 0; ai < checkEvery; ai++) {
+            var state = tape+' '+ins_ptr+' '+dat_ptr+' '+inp_ptr;
+            if (prgmHistory.hasOwnProperty(state)) return 'Infinite loop';
+            else prgmHistory[state] = true;
+
 			if (ins_ptr >= instructions.length) {
-				return ret; //finished reading all instructions
+                return ret; //finished reading all instructions
 			}
 
 			switch (instructions[ins_ptr]) {
-				case '>':
+				case '>': ins_ptr += 1;
 					dat_ptr = (dat_ptr+1)%tapeLen; //loops around
-					ins_ptr += 1;
 					break;
-				case '<':
+				case '<': ins_ptr += 1;
 					dat_ptr = dat_ptr-1 < 0 ? tapeLen-1 : dat_ptr-1; //loops around
-					ins_ptr += 1;
 					break;
-				case '+':
+				case '+': ins_ptr += 1;
 					tape[dat_ptr] = (tape[dat_ptr]+1)%256; //wrap around
-					ins_ptr += 1;
 					break;
-				case '-':
+				case '-': ins_ptr += 1;
+                    console.log
 					tape[dat_ptr] = tape[dat_ptr]-1 < 0 ? 255 : tape[dat_ptr]-1; //wrap around
-					ins_ptr += 1;
 					break;
-				case '.':
+				case '.': ins_ptr += 1;
 					ret += tape[dat_ptr];
-					ins_ptr += 1;
 					break;
-				case ',':
+				case ',': ins_ptr += 1;
 					if (inp_ptr < inputs.length) {
 						tape[dat_ptr] = inputs[inp_ptr];
 						inp_ptr += 1;
 					} else {
 						tape[dat_ptr] = 0; //clear it if there aren't any inputs to grab from
 					}
-					ins_ptr += 1;
 					break;
 				case '[':
 					if (tape[dat_ptr] > 0) {
@@ -145,7 +146,7 @@ function runProgram(program, inputs) {
 		}
 	}
 
-	return 0; //only goes here if it times out
+	return 'Took too long.'; //only goes here if it times out
 }
 
 /********************
@@ -154,31 +155,6 @@ function $s(sel) {
 	if (sel.charAt(0) === '#') return document.getElementById(sel.substring(1));
 	else return false;
 }
-
-function currentTimeMillis() {
-	return new Date().getTime();
-}
-
-function getRandNum(lower, upper) { //returns number in [lower, upper)
-	return Math.floor((Math.random()*(upper-lower))+lower);
-}
-
-function tightMap(n, d1, d2, r1, r2) { //enforces boundaries
-	var raw = map(n, d1, d2, r1, r2);
-	if (raw < r1) return r1;
-	else if (raw > r2) return r2;
-	else return raw;
-}
-
-//given an n in [d1, d2], return a linearly related number in [r1, r2]
-function map(n, d1, d2, r1, r2) {
-	var Rd = d2-d1;
-	var Rr = r2-r1;
-	return (Rr/Rd)*(n - d1) + r1;
-}
-
-/***********
- * objects */
 
 window.addEventListener('load', function() {
 	initBFInterpreter();
